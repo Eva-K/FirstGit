@@ -60,7 +60,106 @@ benthic <- benthic %>%
   select(id_name, point, x, y, id_date) %>%
   mutate(date = stringr::str_remove_all(id_date, "#"))
 
+```
 
+# Explore
+```{r explore the data more}
+
+summary(benthic)
+
+skimr::skim(benthic) # different summary - cleaner. Separates variable data types.
+
+unique(benthic$date) # awesome for unique values!!
+
+unique(benthic$id_name)
+
+ggplot(benthic, aes(date, fill = id_name)) +
+  geom_bar()
+
+```
+
+# Buoy Data
+
+```{r buoy data}
+
+# import buoy raw data
+
+buoy_raw <- readr::read_csv(buoy_url)
+head(buoy)
+# this hasn't worked as the file is not a comma-separated csv, it is text
+# try this:
+buoy_raw <- read_table2(buoy_url)
+head(buoy)
+
+# make a copy of the raw data
+buoy <- buoy_raw
+
+```
+
+# Wrangle Buoy Data
+
+```{r Buoy wrangling}
+
+# overwrite current colmn header names
+names(buoy) <- str_c(names(buoy), # concatentate
+  buoy %>% filter(`#YY` == "#yr"), 
+  # row 1. Looking in a column called #YY for a row that starts with #yr
+  # ie identifies it by exact name
+  # can't use buoy[1,] as this will start eroding the data
+  # successively every time you run it.
+  # Backticks indicate a variable name with a strange character 
+  # which needs to be protected by the backticks
+  sep = "_") # separate by "_"
+
+head(buoy)
+# all in one row
+names(buoy)
+
+# get rid of # and /
+names(buoy) <- str_replace_all(names(buoy), "#", "")
+names(buoy)
+
+head(buoy)
+
+# remove redundant row
+buoy <- buoy %>%
+  filter(`YY_yr` != "#yr")
+  
+```
+# Explore Buoy Data
+
+```{r}
+ggplot(buoy, aes(WTMP_degC)) +
+  geom_bar()
+```
+
+# Join datasets
+
+```{r}
+head(benthic)
+head(buoy)
+
+# unit buoy dates
+buoy <- buoy %>%
+  unite(date, c(YY_yr, MM_mo, DD_dy), sep = "-")
+
+head(buoy)
+buoy$date
+
+# left join benthic by date
+bb_join <- benthic %>%
+  left_join(buoy, by = "date")
+
+head(bb_join)
+
+# doesn't do what we want it to do because there are too many observations
+# but let's select a few columns to have a look
+
+bb_join %>%
+  select(id_name, x, y, date, hh_hr, mm_mn, WTMP_degC) %>%
+  head()
+
+# too many observations for wahc date!
 
 ```
 
