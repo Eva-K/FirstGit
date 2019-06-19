@@ -32,4 +32,204 @@ Note that the `echo = FALSE` parameter was added to the code chunk to prevent pr
 
 # Learning ggplot2
 
-We're learning ggplot2 It's going to be amazing. 
+We're learning ggplot2 It's going to be amazing! 
+
+
+Load tidyverse:
+
+```{r tidyverse} 
+library(tidyverse)
+```
+
+Load some data from Github:
+
+```{r data}
+ohi_data <- read_csv("https://raw.githubusercontent.com/OHI-Science/data-science-training/master/data/OHI_global_data.csv")
+```
+
+Make some plots: (aes means aesthetics)
+
+```{r}
+ggplot(data = ohi_data, aes(x = georegion_one, y = OHI_score))
+```
+To actually plot some data you need a geom:
+
+```{r}
+ggplot(data = ohi_data, aes(x = georegion_one, y = OHI_score)) + geom_point()
+```
+
+Plots should now be turned off! 
+
+Use geom_jitter to spread the points out instead of having them all concentrated on a single vertical line.
+
+```{r}
+ggplot(data = ohi_data, aes(x = georegion_one, y = OHI_score)) + geom_jitter()
+```
+
+To reduce the spread add a fractional number:
+
+```{r}
+ggplot(data = ohi_data, aes(x = georegion_one, y = OHI_score)) + geom_jitter(width=0.2)
+```
+
+To explore a bit more: How many data points are there for georegion one (distribution across countries?
+
+```{r}
+ggplot(data = ohi_data, aes(x = georegion_one)) + geom_bar()
+```
+
+Ditribution of Human D... Index across the countries:
+
+```{r}
+ggplot(data = ohi_data, aes(x = HDI)) + 
+  geom_histogram()
+```
+
+Import a second dataframe:
+
+```{r}
+ohi_summary <- read_csv("https://raw.githubusercontent.com/OHI-Science/data-science-training/master/data/OHI_scores_georegion_summary.csv")
+
+ohi_summary
+```
+
+Layer multiple plots:
+
+```{r}
+ggplot(data = ohi_summary, aes(x = georegions, y = OHI_score_average)) + 
+  geom_bar(stat="identity") +
+  geom_jitter(data=ohi_data, aes(x=georegion_one, y=OHI_score))
+```
+
+Any comments in the ggplot above are global comments, but if you specify a different plot or asex in your geom then this will overide the ggplot.
+
+```{r}
+ggplot(data = ohi_data, aes(y=OHI_score, x = HDI, color=georegion_one)) +
+  geom_point()
+```
+
+```{r}
+ggplot(data = ohi_data) +
+  geom_point(aes(y = OHI_score, x = HDI, color=georegion_one))
+```
+These plots look the same but the latter can result in problems downstream as more layers are added. However, the latter can be easier to understand and not result in mixing up of the data (is global and local).
+
+Aesthetics: Can assign x and y to variables in a dataset. But can add lots of other things:
+Anything that follows the aes command has to have a value in the data.
+
+Adding a third variable.
+Size:
+
+```{r}
+ggplot(data = ohi_data, aes(x = OHI_score, y = HDI, size = coastal_pop)) + 
+  geom_point()
+```
+Colour: (for a continuous variable)
+
+```{r}
+ggplot(data = ohi_data, aes(x = OHI_score, y = HDI, color = coastal_pop)) + 
+  geom_point()
+```
+Colour: (for a discrete variable)
+
+```{r}
+ggplot(data = ohi_data, aes(x = OHI_score, y = HDI, color = georegion_one)) + 
+  geom_point()
+```
+
+Change the shape of the points:
+
+```{r}
+ggplot(data = ohi_data, aes(x = OHI_score, y = HDI, shape = georegion_one)) + 
+  geom_point()
+```
+Add labels:
+```{r}
+ggplot(data = ohi_data, aes(x = OHI_score, y = HDI, label=country)) + 
+  geom_point(aes(x = OHI_score, y = HDI))
+```
+Doesn't work. Have to do:
+
+```{r}
+ggplot(data = ohi_data, aes(x = OHI_score, y = HDI, label=country)) + 
+  geom_point(aes(x = OHI_score, y = HDI)) +
+  geom_text()
+```
+
+Messy!!
+
+# Preloaded ggplot Themes
+
+```{r}
+ggplot(data = ohi_data, aes(x = OHI_score, y = HDI)) + 
+  geom_point() + 
+  theme_bw()
+```
+
+Can store custom themes in Github. Try this one:
+
+```{r}
+source('https://raw.githubusercontent.com/OHI-Science/ohiprep/master/src/R/scatterTheme.txt')       
+
+ggplot(data = ohi_data, aes(x = OHI_score, y = HDI)) + 
+  geom_point() + 
+  scatterTheme
+```
+
+To chabge labels use the labs function:
+
+```{r}
+ggplot(data = ohi_data, aes(y = OHI_score, x = HDI, color=georegion_one)) + 
+  geom_point() + 
+    labs(y = "OHI score, 2017",
+       x = "Human Development Index",
+       title = "Countries with high human development have more sustainable oceans",
+      color = "Georegion") +  # if color doesn't work, use "fill"
+     theme_bw()
+```
+Changes to plots:
+
+color color of lines/points
+fill color within polygons
+label if points are a character
+linetype type of line
+shape style of point
+alpha transparency (0-1)
+size size of shape
+
+COlour palette available at Rcolorbrewer.
+
+```{r}
+install.packages("RColorBrewer")
+```
+
+
+```{r}
+library(RColorBrewer)
+```
+
+```{r}
+display.brewer.all()
+```
+```{r}
+mypalette <- brewer.pal(n=9, "YlOrRd")
+```
+
+Adding a continuous colour scale:
+
+```{r}
+ggplot(data = ohi_data, aes(x = OHI_score, y = OHI_trend, color = HDI)) + 
+  geom_point(size =3) +
+  scale_colour_gradientn(colors = mypalette)
+```
+
+Now using a discrete colour scale:
+
+```{r}
+mypalette <- brewer.pal(n=12, "Set3")
+
+ggplot(data = ohi_data, aes(x = OHI_score, y = HDI, color = georegion_one)) + 
+  geom_point(size = 3) +
+  scale_color_manual(values = mypalette)
+```
+
