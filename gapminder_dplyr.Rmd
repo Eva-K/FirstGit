@@ -1,0 +1,141 @@
+---
+title: "gapminder-dplyr"
+author: "Eva-K"
+date: "19 June 2019"
+output: html_document
+---
+
+Load tidyverse:
+
+```{r}
+library(tidyverse)
+```
+ Load data:
+```{r}
+## read gapminder csv. Note the readr:: prefix identifies which package it's in
+gapminder <- readr::read_csv('https://raw.githubusercontent.com/OHI-Science/data-science-training/master/data/gapminder.csv')
+```
+```{r}
+head(gapminder) # shows first 6
+tail(gapminder) # shows last 6
+
+head(gapminder, 10) # shows first X that you indicate
+tail(gapminder, 12) # guess what this does!
+
+```
+ 
+```{r}
+str(gapminder) #str stands for structure
+
+#column names
+names(gapminder)
+```
+ Look at individual dataframe variables:
+```{r}
+gapminder$lifeExp # very long! hard to make sense of...
+head(gapminder$lifeExp) # can do the same tests we tried before
+str(gapminder$lifeExp) # it is a single numeric vector
+summary(gapminder$lifeExp) # same information, formatted slightly differently
+```
+ 
+# Start wrangling with dplyr
+ 
+```{r}
+filter(gapminder, lifeExp < 35)
+filter(gapminder, country == "Mexico")
+```
+```{r}
+#To find the average life expectency in Brazil between 1987 and 2007
+x <- filter(gapminder, country == "Brazil", year >1987)
+mean(x$lifeExp)
+```
+
+Subset using select:
+
+```{r}
+select(gapminder, year, country, lifeExp)
+
+# can also use to deselect
+select(gapminder, -continent, -lifeExp)
+```
+
+Using filter and select together:
+
+```{r}
+gap_cambodia  <- filter(gapminder, country == "Cambodia")
+gap_cambodia2 <- select(gap_cambodia, -continent, -lifeExp)
+head(gap_cambodia2)
+```
+
+Meet the pipe operator %>% : Ctrl Shift M shortcut
+
+```{r}
+gapminder %>% head() 
+# the pipe takes the data on the left and pipes it to the function on the right
+gap_cambodia  <- gapminder %>% filter(country == "Cambodia") #this first filters gapminder
+gap_cambodia2 <- gap_cambodia %>% select(-continent, -lifeExp) 
+# and then dropping these two columns
+
+#But we can do both these things together
+gap_cambodia  <- gapminder %>% 
+  filter(country == "Cambodia") %>%
+  select(-continent, -lifeExp) 
+
+```
+Adding a column to the dataframe using mutate():
+
+```{r}
+gapminder %>%
+  mutate(gdp = pop * gdpPercap)
+```
+
+```{r}
+#population in thousands for all Asian countries in the year 2007
+# and add it as a new column
+gapminder %>%
+  filter(year == 2007, continent == "Asia") %>%
+  mutate(pop_1000 = pop/1000)
+```
+
+The group_by function:
+
+```{r}
+gapminder %>%
+  filter(year == 2002) %>%
+  group_by(continent) %>% 
+  mutate(cont_pop = sum(pop))
+# this will still display by country so there is a lot of repetition of values
+# add in summarise to get specifically for continent
+gapminder %>%
+  filter(year == 2002) %>%
+  group_by(continent) %>% 
+  summarize(cont_pop = sum(pop))
+
+# now grouping by two variables
+gapminder %>%
+  group_by(continent, year) %>%
+  summarize(cont_pop = sum(pop))%>%
+  ungroup()
+# everything is applied to this group unless you ungroup
+# they say that this can be a problem if you use mutate not so much summarize
+# GOOD PRACTICE to always ungroup after grouping
+
+gapminder %>%
+  group_by(continent, year) %>%
+  summarize(cont_pop = sum(pop))%>%
+  arrange(year)
+  
+```
+Exercise:
+```{r}
+# what is the maximum GDP per continent across all years
+gapminder %>%
+  mutate(gdp = pop * gdpPercap) %>%
+  group_by(continent) %>%
+  mutate(max_gdp = max(gdp)) %>%
+  filter(gdp == max_gdp)
+
+head(gapminder)
+  
+```
+

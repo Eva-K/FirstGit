@@ -34,6 +34,8 @@ Note that the `echo = FALSE` parameter was added to the code chunk to prevent pr
 
 We're learning ggplot2 It's going to be amazing! 
 
+Even if you have global options displaying your plots in Rmarkdown, they do not Push in the doc to Github.....
+
 
 Load tidyverse:
 
@@ -232,4 +234,40 @@ ggplot(data = ohi_data, aes(x = OHI_score, y = HDI, color = georegion_one)) +
   geom_point(size = 3) +
   scale_color_manual(values = mypalette)
 ```
+Saving plots (Example only):
+
+```{r}
+my_plot <- ggplot(data = fake_data, aes(x = as.factor(year), y = values, group=animal, color=animal)) + 
+      geom_point(size = 3) +
+      geom_line(size=2, alpha = 0.5) + 
+      labs(x = "year", color = "") +
+      theme_tufte()
+
+ggsave("name_of_file.png", my_plot, width = 15, height = 10, dpi=300)
+```
+
+Arranging data:
+
+```{r}
+install.packages("cowplot")
+library(cowplot)
+
+score_vs_trend <- ggplot(data=ohi_data, aes(x=OHI_score, y=OHI_trend)) +
+  geom_point(size=3, alpha=0.4)
+
+score_vs_trend  # notice that the default theme has been changed....I really like this theme!
+```
+
+```{r}
+score_vs_HDI <- ggplot(data=ohi_data, aes(x=OHI_score, y=HDI)) +
+  geom_point(size=3, alpha=0.4) + 
+  geom_smooth()
+
+plot_grid(score_vs_trend, score_vs_HDI, labels = c('A', 'B'))
+```
+
+Sweet!
+
+# Data Wrangling
+
 
