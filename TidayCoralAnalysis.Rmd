@@ -55,6 +55,11 @@ benthic <- benthic %>%
 
 benthic # prints the first 200 cf head
 
+# remove # from date column
+benthic <- benthic %>%
+  select(id_name, point, x, y, id_date) %>%
+  mutate(date = stringr::str_remove_all(id_date, "#"))
+
 
 
 ```
