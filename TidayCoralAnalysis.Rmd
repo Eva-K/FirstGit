@@ -4,7 +4,58 @@ author: "Eva-K"
 date: "19 June 2019"
 output: html_document
 ---
-```{r}
+
+
+```{r setup, morning=FALSE, message = FALSE}
+# install luibraries
+library(tidyverse) # use install.packages("tidyverse") if receive an error message
+library(janitor) # use install.packages("janitor") if receive an error message
+library(skimr)  # use install.packages("skimr") if receive an error message
+library(stringr) # use install.packages("stringr") if receive an error message
+
+# can select the function from the # text 
+# and then Run selected and it will run it as code (!)
+# website is
+# ohi-science.org/uq-training > Day 2 14:45: Tidy Coral
+
+## benthic data
+benthic_url <- 'https://www.nodc.noaa.gov/archive/arc0054/0104255/1.1/data/0-data/cd08/100308OaAla03m.CSV'
+
+## buoy data
+buoy_url <- 'http://www.ndbc.noaa.gov/view_text_file.php?filename=mokh1h2010.txt.gz&dir=data/historical/stdmet/'
+
+
+```
+
+```{r benthic raw}
+# read in the benthic data from the website
+
+benthic_raw <- read.csv(benthic_url)
+head(benthic_raw)
+
+```
+
+# Wrangle
+
+```{r wrangle!}
+# wrangle time
+
+benthic <- benthic_raw %>%
+  janitor::clean_names() 
+# janitor:: just indicates which package the function comes from
+# can also be used to force which package it comes from
+
+# explore the data
+head(benthic)
+names(benthic)
+
+# select required columns
+benthic <- benthic %>%
+  select(id_name, point, x, y, id_date)
+
+benthic # prints the first 200 cf head
+
+
 
 ```
 
